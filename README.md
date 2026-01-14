@@ -9,7 +9,7 @@ This repository contains simple browser-based games written in HTML, CSS, and Ja
 ## Structure
 
 - `/index.html` — Landing page
-- `/tank_game_v11.html` — Tank game
+- `/tank_game.html` — Tank game
 - `/assets/` — Images and shared assets
 - `README.md` — Project documentation
 
