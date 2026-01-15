@@ -4,7 +4,7 @@ This repository contains simple browser-based games written in HTML, CSS, and Ja
 
 ## Games
 
-- [Tank Game v11](https://harry-at-cognosa.github.io/html-browser-games/tank_game.html)
+- [Tank Game](https://harry-at-cognosa.github.io/html-browser-games/tank_game.html)
 
 ## Structure
 
