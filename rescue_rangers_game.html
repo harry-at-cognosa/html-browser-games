@@ -421,6 +421,37 @@ function update() {
         }
         if (!keys['b']) h._bombCd = false;
 
+        // Missiles (M key) - heat-seeking, target nearest enemy heli or ground unit
+        if (keys['m'] && h.missiles > 0 && !h._mslCd) {
+            h.missiles--;
+            h._mslCd = true;
+            // Find target: prefer enemy helis, then ground units
+            let target = null;
+            let bestDist = Infinity;
+            for (const eh of G.enemyHelis) {
+                if (eh.alive) {
+                    const d = Math.hypot(eh.x - h.x, eh.y - h.y);
+                    if (d < bestDist) { bestDist = d; target = eh; }
+                }
+            }
+            if (!target) {
+                for (const u of G.enemyUnits) {
+                    if (u.alive) {
+                        const d = Math.hypot(u.x - h.x, u.y - h.y);
+                        if (d < bestDist) { bestDist = d; target = u; }
+                    }
+                }
+            }
+            G.bullets.push({
+                x: h.x + h.facing * 20, y: h.y,
+                vx: h.facing * 6, vy: 0,
+                owner: 'player', life: 180, damage: 60,
+                missile: true, target: target, speed: 5, turnRate: 0.08
+            });
+            playSound('bomb');
+        }
+        if (!keys['m']) h._mslCd = false;
+
         // Drop troops
         if (keys['e'] && h.troops > 0 && !h._dropCd) {
             h.troops--;
@@ -457,9 +488,24 @@ function update() {
     // --- Bullets ---
     for (let i = G.bullets.length - 1; i >= 0; i--) {
         const b = G.bullets[i];
+        // Missile homing logic
+        if (b.missile && b.target && b.target.alive !== false) {
+            const dx = b.target.x - b.x;
+            const dy = (b.target.y || GROUND_Y) - b.y;
+            const desired = Math.atan2(dy, dx);
+            const current = Math.atan2(b.vy, b.vx);
+            let diff = desired - current;
+            while (diff > Math.PI) diff -= Math.PI * 2;
+            while (diff < -Math.PI) diff += Math.PI * 2;
+            const turn = Math.max(-b.turnRate, Math.min(b.turnRate, diff));
+            const ang = current + turn;
+            b.vx = Math.cos(ang) * b.speed;
+            b.vy = Math.sin(ang) * b.speed;
+        }
         b.x += b.vx; b.y += b.vy;
         b.life--;
         if (b.life <= 0 || b.y > GROUND_Y || b.x < 0 || b.x > WORLD_W) {
+            if (b.missile) spawnExplosion(b.x, b.y, 8);
             G.bullets.splice(i, 1); continue;
         }
 
@@ -1422,8 +1468,28 @@ function drawBullets() {
     for (const b of G.bullets) {
         const sx = b.x - G.cam.x;
         if (sx < -5 || sx > CW + 5) continue;
-        ctx.fillStyle = b.owner === 'player' ? '#8f8' : '#f88';
-        ctx.fillRect(sx - 2, b.y - 1, 5, 2);
+        if (b.missile) {
+            // Missile: larger, white with orange trail
+            const ang = Math.atan2(b.vy, b.vx);
+            ctx.save();
+            ctx.translate(sx, b.y);
+            ctx.rotate(ang);
+            ctx.fillStyle = '#fff';
+            ctx.fillRect(-6, -2, 12, 4);
+            ctx.fillStyle = '#f80';
+            ctx.fillRect(-10, -1, 5, 2);
+            ctx.restore();
+            // Smoke trail
+            ctx.globalAlpha = 0.4;
+            ctx.fillStyle = '#aaa';
+            ctx.beginPath();
+            ctx.arc(sx - Math.cos(ang) * 12, b.y - Math.sin(ang) * 12, 3, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        } else {
+            ctx.fillStyle = b.owner === 'player' ? '#8f8' : '#f88';
+            ctx.fillRect(sx - 2, b.y - 1, 5, 2);
+        }
     }
 }
 
@@ -1558,7 +1624,7 @@ function drawHUD() {
     ctx.fillStyle = '#555';
     ctx.font = '10px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('WASD:Fly  SPACE:Shoot  B:Bomb  E:Drop', CW - 15, 18);
+    ctx.fillText('WASD:Fly  SPACE:Shoot  B:Bomb  M:Missile  E:Drop', CW - 15, 18);
     ctx.fillText('F:Pickup  1-4:Buy  TAB:Shop  ESC:Pause', CW - 15, 32);
 
     // Bottom bar
