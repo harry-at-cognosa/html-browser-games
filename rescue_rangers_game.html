@@ -226,6 +226,10 @@ document.addEventListener('keydown', (e) => {
         e.preventDefault();
         if (audioCtx.state === 'suspended') audioCtx.resume();
     }
+    if (e.key === ' ' && G.state === 'missionComplete') {
+        initGame(G.mi + 1);
+        e.preventDefault();
+    }
     if (e.key === 'Tab') {
         e.preventDefault();
         if (G.state === 'playing') G.showShop = !G.showShop;
@@ -971,21 +975,13 @@ function update() {
         G.playerBase.hp = 0;
         G.state = 'defeated';
     }
-    if (G.enemyBase.hp <= 0) {
+    if (G.enemyBase.hp <= 0 && G.state === 'playing') {
         G.enemyBase.hp = 0;
         if (G.mi < MISSIONS.length - 1) {
             G.state = 'missionComplete';
             G.missionCompleteTimer = 180;
         } else {
             G.state = 'victory';
-        }
-    }
-
-    // Mission complete timer
-    if (G.state === 'missionComplete') {
-        G.missionCompleteTimer--;
-        if (G.missionCompleteTimer <= 0) {
-            initGame(G.mi + 1);
         }
     }
 
@@ -1723,7 +1719,7 @@ function drawMissionComplete() {
     ctx.fillText('MISSION COMPLETE!', CW/2, CH/2 - 10);
     ctx.fillStyle = '#aaa';
     ctx.font = '14px monospace';
-    ctx.fillText('Preparing next mission...', CW/2, CH/2 + 30);
+    ctx.fillText('Press SPACE for next mission', CW/2, CH/2 + 30);
 }
 
 function drawShop() {
