@@ -320,6 +320,14 @@ function spawnEnemyHeli() {
 
 // --- UPDATE ---
 function update() {
+    // Mission complete timer runs even when not 'playing'
+    if (G.state === 'missionComplete') {
+        G.missionCompleteTimer--;
+        if (G.missionCompleteTimer <= 0) {
+            initGame(G.mi + 1);
+        }
+        return;
+    }
     if (G.state !== 'playing') return;
     G.frame++;
 
