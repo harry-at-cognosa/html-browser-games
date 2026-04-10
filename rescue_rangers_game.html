@@ -140,7 +140,7 @@ function initGame(mi) {
             x: WORLD_W - 200, y: GROUND_Y - 80,
             vx: 0, vy: 0, facing: -1,
             hp: 100, maxHP: 100,
-            ammo: 50, maxAmmo: 50,
+            ammo: 70, maxAmmo: 70,
             bombs: 10, maxBombs: 10,
             missiles: 2, maxMissiles: 2,
             troops: 0, maxTroops: 4,
@@ -1589,7 +1589,7 @@ function drawHUD() {
 
     // Top center - three HP bars
     const barW = 120, barH = 12, barY = 12;
-    const cx = CW / 2;
+    const cx = CW / 2 - 60;
 
     // Player base HP
     ctx.fillStyle = '#333';
@@ -1626,11 +1626,12 @@ function drawHUD() {
     ctx.fillText('ENEMY BASE', cx + barW * 0.6 + barW/2, barY + barH + 11);
 
     // Top-right: control hints
-    ctx.fillStyle = '#555';
+    ctx.fillStyle = '#ff0';
     ctx.font = '10px monospace';
     ctx.textAlign = 'right';
-    ctx.fillText('WASD:Fly  SPACE:Shoot  B:Bomb  M:Missile  E:Drop  F:Pickup', CW - 15, 18);
-    ctx.fillText('F:Pickup  1-4:Buy  TAB:Shop  ESC:Pause', CW - 15, 32);
+    ctx.fillText('WASD:Fly  SPACE:Shoot  B:Bomb', CW - 15, 14);
+    ctx.fillText('M:Missile  E:Drop  F:Pickup', CW - 15, 27);
+    ctx.fillText('1-4:Buy  TAB:Shop  ESC:Pause', CW - 15, 40);
 
     // Bottom bar
     ctx.fillStyle = 'rgba(0,0,0,0.7)';
