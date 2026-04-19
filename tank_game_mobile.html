@@ -45,8 +45,8 @@
       -webkit-tap-highlight-color: transparent;
       -webkit-text-size-adjust: 100%;
       text-size-adjust: 100%;
-      /* manipulation = allow scroll/pan but disable double-tap-to-zoom on iOS Safari */
-      touch-action: manipulation;
+      /* none = block all browser-handled gestures including pinch zoom and double-tap zoom */
+      touch-action: none;
     }
 
     body {
@@ -120,7 +120,7 @@
     .btn-a { grid-area: a; }
     .btn-s { grid-area: s; }
     .btn-d { grid-area: d; }
-    .btn-fire { grid-area: fire; font-size: 2rem; }
+    .btn-fire { grid-area: fire; font-size: 3.2rem; }
     .btn-p { grid-area: p; }
     .btn-c { grid-area: c; }
     .btn-r { grid-area: r; }
@@ -134,7 +134,7 @@
       border: 3px solid #f97316;
       border-radius: 14px;
       font-family: inherit;
-      font-size: 2rem;
+      font-size: 4rem;
       font-weight: bold;
       letter-spacing: 1px;
       cursor: pointer;
@@ -252,8 +252,8 @@
         grid-template-columns: repeat(3, 108px);
         grid-template-rows: 162px 108px;
       }
-      .tbtn { font-size: 1.8rem; }
-      .btn-fire { font-size: 1.8rem; }
+      .tbtn { font-size: 3.2rem; }
+      .btn-fire { font-size: 2.6rem; }
     }
 
     /* Compact pads for true small screens (phones in landscape) */
@@ -266,8 +266,8 @@
         grid-template-columns: repeat(3, 72px);
         grid-template-rows: 108px 72px;
       }
-      .tbtn { font-size: 1.4rem; border-width: 2px; }
-      .btn-fire { font-size: 1.4rem; }
+      .tbtn { font-size: 2rem; border-width: 2px; }
+      .btn-fire { font-size: 1.8rem; }
     }
   </style>
 </head>
@@ -1420,13 +1420,15 @@
     }
 
     // Fit the canvas to the largest square that fits in the play row, after the
-    // pads have claimed their fixed widths. Backing store stays 600x600 — only
-    // CSS display size changes, so all game-world coordinates are unchanged.
+    // pads have claimed their fixed widths. Computed once at load (after layout
+    // settles) and again only on orientationchange — NOT on every viewport
+    // twitch, because iOS Safari's URL bar collapses on first interaction and
+    // would otherwise re-trigger sizing mid-tap and shrink the canvas.
     const playRowEl = document.querySelector('.play-row');
     const padLeftEl = document.querySelector('.pad-left');
     const padRightEl = document.querySelector('.pad-right');
     const PLAY_ROW_GAP = 20;
-    const CANVAS_OUTER_MARGIN = 20; // breathing room between pad and canvas
+    const CANVAS_OUTER_MARGIN = 20;
 
     function fitCanvasDisplay() {
       if (!playRowEl) return;
@@ -1439,13 +1441,13 @@
       canvas.style.width = size + 'px';
       canvas.style.height = size + 'px';
     }
-    window.addEventListener('resize', fitCanvasDisplay);
-    window.addEventListener('orientationchange', fitCanvasDisplay);
-    if (typeof ResizeObserver !== 'undefined') {
-      new ResizeObserver(fitCanvasDisplay).observe(document.body);
-    }
-    // Defer once so layout has settled before measuring.
-    requestAnimationFrame(fitCanvasDisplay);
+    // Initial fit once layout has settled (two RAFs is more reliable than one).
+    requestAnimationFrame(() => requestAnimationFrame(fitCanvasDisplay));
+    // Only recompute when the user actually rotates the device. Wait briefly
+    // for visualViewport to settle before measuring.
+    window.addEventListener('orientationchange', () => {
+      setTimeout(fitCanvasDisplay, 300);
+    });
 
     // iOS Safari zoom suppression. CSS touch-action handles double-tap, but pinch
     // and two-finger gestures still fire gesture* events; cancel them to keep the
