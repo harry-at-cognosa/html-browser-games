@@ -43,6 +43,10 @@
       -webkit-user-select: none;
       user-select: none;
       -webkit-tap-highlight-color: transparent;
+      -webkit-text-size-adjust: 100%;
+      text-size-adjust: 100%;
+      /* manipulation = allow scroll/pan but disable double-tap-to-zoom on iOS Safari */
+      touch-action: manipulation;
     }
 
     body {
@@ -61,13 +65,18 @@
       line-height: 1.2;
     }
 
+    /* 1fr spacers on the outside push the pads inward so they sit next to the canvas */
     .play-row {
       display: grid;
-      grid-template-columns: auto 1fr auto;
+      grid-template-columns: 1fr auto auto auto 1fr;
       align-items: center;
-      gap: 16px;
+      column-gap: 20px;
       min-height: 0;
     }
+
+    .pad-left { grid-column: 2; }
+    .canvas-wrap { grid-column: 3; }
+    .pad-right { grid-column: 4; }
 
     .canvas-wrap {
       display: flex;
@@ -98,16 +107,16 @@
     }
 
     .pad-left {
-      grid-template-columns: repeat(3, 110px);
-      grid-template-rows: repeat(2, 110px);
+      grid-template-columns: repeat(3, 165px);
+      grid-template-rows: repeat(2, 165px);
       grid-template-areas:
         ".  w  ."
         "a  s  d";
     }
 
     .pad-right {
-      grid-template-columns: repeat(3, 88px);
-      grid-template-rows: 132px 88px;
+      grid-template-columns: repeat(3, 132px);
+      grid-template-rows: 198px 132px;
       grid-template-areas:
         "fire fire fire"
         "p    c    r";
@@ -242,29 +251,29 @@
     /* Mid-size viewports (e.g. iPad Safari with all chrome bars showing) */
     @media (max-height: 720px) {
       .pad-left {
-        grid-template-columns: repeat(3, 88px);
-        grid-template-rows: repeat(2, 88px);
+        grid-template-columns: repeat(3, 132px);
+        grid-template-rows: repeat(2, 132px);
       }
       .pad-right {
-        grid-template-columns: repeat(3, 72px);
-        grid-template-rows: 108px 72px;
+        grid-template-columns: repeat(3, 108px);
+        grid-template-rows: 162px 108px;
       }
-      .tbtn { font-size: 1.6rem; }
-      .btn-fire { font-size: 1.6rem; }
+      .tbtn { font-size: 1.8rem; }
+      .btn-fire { font-size: 1.8rem; }
     }
 
     /* Compact pads for true small screens (phones in landscape) */
     @media (max-height: 480px) {
       .pad-left {
-        grid-template-columns: repeat(3, 56px);
-        grid-template-rows: repeat(2, 56px);
+        grid-template-columns: repeat(3, 84px);
+        grid-template-rows: repeat(2, 84px);
       }
       .pad-right {
-        grid-template-columns: repeat(3, 48px);
-        grid-template-rows: 72px 48px;
+        grid-template-columns: repeat(3, 72px);
+        grid-template-rows: 108px 72px;
       }
-      .tbtn { font-size: 1.1rem; border-width: 2px; }
-      .btn-fire { font-size: 1.2rem; }
+      .tbtn { font-size: 1.4rem; border-width: 2px; }
+      .btn-fire { font-size: 1.4rem; }
     }
   </style>
 </head>
@@ -1415,6 +1424,19 @@
         }
       } catch (_) {}
     }
+
+    // iOS Safari zoom suppression. CSS touch-action handles double-tap, but pinch
+    // and two-finger gestures still fire gesture* events; cancel them to keep the
+    // game viewport stable.
+    ['gesturestart', 'gesturechange', 'gestureend'].forEach((evt) => {
+      document.addEventListener(evt, (e) => e.preventDefault());
+    });
+    // Belt and suspenders: also block any multi-touch zoom via touchmove.
+    document.addEventListener('touchmove', (e) => {
+      if (e.touches && e.touches.length > 1) e.preventDefault();
+    }, { passive: false });
+    // Suppress double-tap zoom that Safari sometimes still fires by guarding dblclick.
+    document.addEventListener('dblclick', (e) => e.preventDefault());
 
     // =============================================================================
     // INITIALIZATION
