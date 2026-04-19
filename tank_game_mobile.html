@@ -90,24 +90,24 @@
       touch-action: none;
     }
 
-    /* Touch button pads */
+    /* Touch button pads — sized for iPad thumbs (~110-130px primary controls) */
     .pad {
       display: grid;
-      gap: 10px;
+      gap: 12px;
       touch-action: none;
     }
 
     .pad-left {
-      grid-template-columns: repeat(3, 60px);
-      grid-template-rows: repeat(2, 60px);
+      grid-template-columns: repeat(3, 110px);
+      grid-template-rows: repeat(2, 110px);
       grid-template-areas:
         ".  w  ."
         "a  s  d";
     }
 
     .pad-right {
-      grid-template-columns: repeat(3, 60px);
-      grid-template-rows: 80px 60px;
+      grid-template-columns: repeat(3, 88px);
+      grid-template-rows: 132px 88px;
       grid-template-areas:
         "fire fire fire"
         "p    c    r";
@@ -117,7 +117,7 @@
     .btn-a { grid-area: a; }
     .btn-s { grid-area: s; }
     .btn-d { grid-area: d; }
-    .btn-fire { grid-area: fire; font-size: 1.4rem; }
+    .btn-fire { grid-area: fire; font-size: 2rem; }
     .btn-p { grid-area: p; }
     .btn-c { grid-area: c; }
     .btn-r { grid-area: r; }
@@ -129,9 +129,9 @@
       background: rgba(42, 42, 62, 0.6);
       color: #fff;
       border: 3px solid #f97316;
-      border-radius: 12px;
+      border-radius: 14px;
       font-family: inherit;
-      font-size: 1.3rem;
+      font-size: 2rem;
       font-weight: bold;
       letter-spacing: 1px;
       cursor: pointer;
@@ -239,15 +239,32 @@
       .rotate-overlay { display: flex; }
     }
 
-    /* Compact button pads on smaller viewports (phones) */
-    @media (max-height: 600px) {
-      .pad-left, .pad-right {
-        grid-template-columns: repeat(3, 48px);
+    /* Mid-size viewports (e.g. iPad Safari with all chrome bars showing) */
+    @media (max-height: 720px) {
+      .pad-left {
+        grid-template-columns: repeat(3, 88px);
+        grid-template-rows: repeat(2, 88px);
       }
-      .pad-left { grid-template-rows: repeat(2, 48px); }
-      .pad-right { grid-template-rows: 64px 48px; }
-      .tbtn { font-size: 1rem; border-width: 2px; }
-      .btn-fire { font-size: 1.1rem; }
+      .pad-right {
+        grid-template-columns: repeat(3, 72px);
+        grid-template-rows: 108px 72px;
+      }
+      .tbtn { font-size: 1.6rem; }
+      .btn-fire { font-size: 1.6rem; }
+    }
+
+    /* Compact pads for true small screens (phones in landscape) */
+    @media (max-height: 480px) {
+      .pad-left {
+        grid-template-columns: repeat(3, 56px);
+        grid-template-rows: repeat(2, 56px);
+      }
+      .pad-right {
+        grid-template-columns: repeat(3, 48px);
+        grid-template-rows: 72px 48px;
+      }
+      .tbtn { font-size: 1.1rem; border-width: 2px; }
+      .btn-fire { font-size: 1.2rem; }
     }
   </style>
 </head>
