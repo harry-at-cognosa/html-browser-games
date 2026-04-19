@@ -65,38 +65,32 @@
       line-height: 1.2;
     }
 
-    /* 1fr spacers on the outside push the pads inward so they sit next to the canvas */
+    /* Flex with justify-center keeps pads adjacent to the canvas; leftover
+       horizontal space spills to the outer margins of the play row. The canvas
+       display size is computed in JS (fitCanvasDisplay) so it stays a true
+       square that fits both the available width and height. */
     .play-row {
-      display: grid;
-      grid-template-columns: 1fr auto auto auto 1fr;
+      display: flex;
       align-items: center;
-      column-gap: 20px;
+      justify-content: center;
+      gap: 20px;
       min-height: 0;
+      min-width: 0;
     }
-
-    .pad-left { grid-column: 2; }
-    .canvas-wrap { grid-column: 3; }
-    .pad-right { grid-column: 4; }
 
     .canvas-wrap {
       display: flex;
       align-items: center;
       justify-content: center;
-      min-width: 0;
-      min-height: 0;
-      height: 100%;
+      flex: 0 0 auto;
     }
 
     canvas {
       border: 3px solid #444;
       background-color: #2a2a3e;
       display: block;
-      width: auto;
-      height: 100%;
-      max-width: 100%;
-      max-height: 100%;
-      aspect-ratio: 1 / 1;
       touch-action: none;
+      /* width/height set by fitCanvasDisplay() */
     }
 
     /* Touch button pads — sized for iPad thumbs (~110-130px primary controls) */
@@ -1424,6 +1418,34 @@
         }
       } catch (_) {}
     }
+
+    // Fit the canvas to the largest square that fits in the play row, after the
+    // pads have claimed their fixed widths. Backing store stays 600x600 — only
+    // CSS display size changes, so all game-world coordinates are unchanged.
+    const playRowEl = document.querySelector('.play-row');
+    const padLeftEl = document.querySelector('.pad-left');
+    const padRightEl = document.querySelector('.pad-right');
+    const PLAY_ROW_GAP = 20;
+    const CANVAS_OUTER_MARGIN = 20; // breathing room between pad and canvas
+
+    function fitCanvasDisplay() {
+      if (!playRowEl) return;
+      const playW = playRowEl.clientWidth;
+      const playH = playRowEl.clientHeight;
+      const padsW = padLeftEl.offsetWidth + padRightEl.offsetWidth;
+      const reservedW = padsW + (PLAY_ROW_GAP * 2) + CANVAS_OUTER_MARGIN;
+      const availW = Math.max(160, playW - reservedW);
+      const size = Math.max(200, Math.min(availW, playH));
+      canvas.style.width = size + 'px';
+      canvas.style.height = size + 'px';
+    }
+    window.addEventListener('resize', fitCanvasDisplay);
+    window.addEventListener('orientationchange', fitCanvasDisplay);
+    if (typeof ResizeObserver !== 'undefined') {
+      new ResizeObserver(fitCanvasDisplay).observe(document.body);
+    }
+    // Defer once so layout has settled before measuring.
+    requestAnimationFrame(fitCanvasDisplay);
 
     // iOS Safari zoom suppression. CSS touch-action handles double-tap, but pinch
     // and two-finger gestures still fire gesture* events; cancel them to keep the
