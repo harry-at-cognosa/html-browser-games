@@ -190,7 +190,8 @@
       // ==========================================================================
       TANK_HEALTH: 3,         // Hits required to destroy a tank
       TANK_SPEED: 2.0,        // Movement speed (pixels per frame)
-      TANK_ROTATION_SPEED: 1.5, // Rotation speed (degrees per frame)
+      PLAYER_ROTATION_SPEED: 0.75, // Player rotation speed (degrees per frame)
+      AI_ROTATION_SPEED: 1.5, // AI rotation speed (degrees per frame)
       TANK_SIZE: 28,          // Tank body size in pixels (< CELL_SIZE to fit through 1-block gaps)
 
       // ==========================================================================
@@ -853,10 +854,10 @@
       
       // Rotation
       if (keys['a'] || keys['A']) {
-        tank.angle -= CONFIG.TANK_ROTATION_SPEED;
+        tank.angle -= CONFIG.PLAYER_ROTATION_SPEED;
       }
       if (keys['d'] || keys['D']) {
-        tank.angle += CONFIG.TANK_ROTATION_SPEED;
+        tank.angle += CONFIG.PLAYER_ROTATION_SPEED;
       }
       tank.angle = normalizeAngle(tank.angle);
       
@@ -916,8 +917,8 @@
       if (angleDiff > 180) angleDiff -= 360;
       
       // Rotate towards enemy
-      if (Math.abs(angleDiff) > CONFIG.TANK_ROTATION_SPEED) {
-        tank.angle += angleDiff > 0 ? CONFIG.TANK_ROTATION_SPEED : -CONFIG.TANK_ROTATION_SPEED;
+      if (Math.abs(angleDiff) > CONFIG.AI_ROTATION_SPEED) {
+        tank.angle += angleDiff > 0 ? CONFIG.AI_ROTATION_SPEED : -CONFIG.AI_ROTATION_SPEED;
         tank.angle = normalizeAngle(tank.angle);
       }
       
